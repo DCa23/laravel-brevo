@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hofmannsven\Brevo;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Mail;
 
 class BrevoServiceProvider extends ServiceProvider
 {
@@ -16,7 +17,7 @@ class BrevoServiceProvider extends ServiceProvider
          */
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/brevo.php' => config_path('brevo.php'),
+                __DIR__ . '/../config/brevo.php' => config_path('brevo.php'),
             ], 'brevo.config');
         }
     }
@@ -24,9 +25,13 @@ class BrevoServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Automatically apply the package configuration.
-        $this->mergeConfigFrom(__DIR__.'/../config/brevo.php', 'brevo');
+        $this->mergeConfigFrom(__DIR__ . '/../config/brevo.php', 'brevo');
 
         // Bind the service to the container.
-        $this->app->singleton('brevo', fn () => new Brevo);
+        $this->app->singleton('brevo', fn() => new Brevo);
+
+        Mail::extend('brevo', function (array $config = []) {
+            return new BrevoTransport();
+        });
     }
 }
